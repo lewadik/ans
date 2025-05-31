@@ -1,0 +1,9 @@
+---
+# Variables for webservers group
+nginx_port: 80
+website_title: "Ansible Managed Website"
+max_connections: 1000
+
+# Package versions
+nginx_version: latest
+

@@ -1,0 +1,43 @@
+---
+- name: Configure web servers
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Ensure nginx is installed
+      package:
+        name: nginx
+        state: present
+      tags: [nginx, install]
+
+    - name: Ensure nginx is running
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+      tags: [nginx, service]
+
+    - name: Create a simple index page
+      copy:
+        content: |
+          <html>
+          <head><title>Ansible Managed Server</title></head>
+          <body>
+            <h1>Welcome to {{ inventory_hostname }}</h1>
+            <p>This server is managed by Ansible</p>
+          </body>
+          </html>
+        dest: /var/www/html/index.html
+        owner: www-data
+        group: www-data
+        mode: '0644'
+      tags: [nginx, content]
+
+- name: Configure database servers
+  hosts: databases
+  become: yes
+  tasks:
+    - name: Update package cache
+      package:
+        update_cache: yes
+      tags: [system, update]
+

@@ -1,0 +1,13 @@
+---
+# Global variables for all hosts
+timezone: "UTC"
+common_packages:
+  - curl
+  - vim
+  - htop
+  - git
+
+# System settings
+max_open_files: 65536
+syslog_server: "localhost"
+
