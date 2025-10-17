@@ -11,7 +11,8 @@ my-ansible-project
 │   └── hosts.yml       # Hosts and connection details
 ├── playbooks            # Playbooks to execute tasks
 │   ├── site.yml        # Main playbook
-│   └── traffmonetizer.yml # TrafficMonetizer deployment playbook
+│   ├── traffmonetizer.yml # TrafficMonetizer deployment playbook
+│   └── gost-proxy.yml  # GOST proxy deployment playbook
 ├── roles                # Roles for organizing tasks
 │   ├── common           # Common role for shared tasks
 │   │   ├── tasks
@@ -34,18 +35,32 @@ my-ansible-project
 │   │   ├── meta
 │   │   │   └── main.yml # Role metadata
 │   │   └── README.md    # Docker role documentation
-│   └── traffmonetizer   # TrafficMonetizer deployment role
+│   ├── traffmonetizer   # TrafficMonetizer deployment role
+│   │   ├── tasks
+│   │   │   └── main.yml # TrafficMonetizer deployment tasks
+│   │   ├── handlers
+│   │   │   └── main.yml # Container management handlers
+│   │   ├── defaults
+│   │   │   └── main.yml # Default variables
+│   │   ├── vars
+│   │   │   └── main.yml # Role variables
+│   │   ├── meta
+│   │   │   └── main.yml # Role metadata and dependencies
+│   │   └── README.md    # TrafficMonetizer role documentation
+│   └── gost-proxy       # GOST proxy server role
 │       ├── tasks
-│       │   └── main.yml # TrafficMonetizer deployment tasks
+│       │   └── main.yml # GOST installation and configuration tasks
 │       ├── handlers
-│       │   └── main.yml # Container management handlers
+│       │   └── main.yml # Service management handlers
+│       ├── templates
+│       │   └── gost.service.j2 # Systemd service template
 │       ├── defaults
 │       │   └── main.yml # Default variables
 │       ├── vars
 │       │   └── main.yml # Role variables
 │       ├── meta
-│       │   └── main.yml # Role metadata and dependencies
-│       └── README.md    # TrafficMonetizer role documentation
+│       │   └── main.yml # Role metadata
+│       └── README.md    # GOST proxy role documentation
 └── README.md            # Project documentation
 ```
 
@@ -179,6 +194,71 @@ ansible-playbook playbooks/traffmonetizer.yml --ask-vault-pass
 ```bash
 ansible-playbook playbooks/traffmonetizer.yml --limit production_servers
 ```
+
+### GOST Proxy Role
+The `roles/gost-proxy` directory contains tasks for installing and configuring the GOST proxy server. This role:
+
+- **Features**:
+  - Downloads GOST binary from curl.ge/gost
+  - Creates systemd service for automatic startup
+  - Configurable proxy credentials and port
+  - Public IP detection and display
+  - Service management and monitoring
+
+#### GOST Proxy Role Variables
+
+```yaml
+# GOST proxy configuration
+gost_username: "leo"           # Proxy username
+gost_password: "p23lev43"      # Proxy password
+gost_port: 8081                # Proxy port
+gost_bind_address: "0.0.0.0"   # Bind address (0.0.0.0 for all interfaces)
+
+# Installation configuration
+gost_download_url: "https://curl.ge/gost"
+gost_install_path: "/usr/local/bin"
+gost_user: "gost"              # Service user
+
+# Service configuration
+gost_service_enabled: true
+gost_service_state: started
+```
+
+#### Using GOST Proxy Role
+
+**Deploy GOST proxy with default settings**:
+```bash
+ansible-playbook playbooks/gost-proxy.yml
+```
+
+**Deploy with custom credentials** (recommended):
+```bash
+ansible-playbook playbooks/gost-proxy.yml -e "gost_username=myuser" -e "gost_password=mypassword"
+```
+
+**Deploy with Ansible Vault** (most secure):
+```bash
+# Create encrypted vars file
+ansible-vault create group_vars/all/vault.yml
+# Add your secure credentials:
+# gost_username: "secure_user"
+# gost_password: "secure_password"
+
+# Run with vault
+ansible-playbook playbooks/gost-proxy.yml --ask-vault-pass
+```
+
+**Test your proxy after deployment**:
+```bash
+curl --proxy http://username:password@YOUR_PUBLIC_IP:8081 https://ipinfo.io/ip
+```
+
+#### Security Notes
+
+- Change default credentials for production use
+- Consider firewall rules for the proxy port
+- Use Ansible Vault for sensitive variables
+- Monitor proxy usage and access logs
 
 ## License
 

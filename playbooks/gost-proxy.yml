@@ -1,0 +1,24 @@
+---
+- hosts: all
+  become: true
+  roles:
+    - gost-proxy
+
+  post_tasks:
+    - name: Display proxy connection information
+      debug:
+        msg: |
+          ========================================
+          GOST Proxy Successfully Deployed!
+          ========================================
+          
+          Proxy URL: http://{{ gost_username }}:{{ gost_password }}@{{ hostvars[inventory_hostname]['public_ip_result']['content'] | default('YOUR_PUBLIC_IP') | trim }}:{{ gost_port }}
+          
+          Service Status: Active
+          Port: {{ gost_port }}
+          Bind Address: {{ gost_bind_address }}
+          
+          Test your proxy:
+          curl --proxy http://{{ gost_username }}:{{ gost_password }}@{{ hostvars[inventory_hostname]['public_ip_result']['content'] | default('YOUR_PUBLIC_IP') | trim }}:{{ gost_port }} https://ipinfo.io/ip
+          
+          ========================================
