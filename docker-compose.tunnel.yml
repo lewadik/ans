@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  ssh-tunnel:
+    image: alpine:latest
+    container_name: ssh-tunnel
+    restart: unless-stopped
+    volumes:
+      - ~/.ssh:/root/.ssh:ro
+    command: >
+      sh -c "
+        apk add --no-cache openssh-client &&
+        ssh -o StrictHostKeyChecking=no 
+            -o ServerAliveInterval=60 
+            -o ServerAliveCountMax=3 
+            -o ExitOnForwardFailure=yes 
+            -R 8080:host.docker.internal:3000 
+            user@your-vps-ip -N
+      "
+    network_mode: host
+
+  socat-tcp:
+    image: alpine:latest
+    container_name: socat-tcp
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    command: >
+      sh -c "
+        apk add --no-cache socat &&
+        socat TCP-LISTEN:8080,fork,reuseaddr TCP:your-vps-ip:8080
+      "
+
+  socat-udp:
+    image: alpine:latest
+    container_name: socat-udp
+    restart: unless-stopped
+    ports:
+      - "8081:8081/udp"
+    command: >
+      sh -c "
+        apk add --no-cache socat &&
+        socat UDP-LISTEN:8081,fork,reuseaddr UDP:your-vps-ip:8081
+      "

@@ -1,0 +1,6 @@
+---
+# vars file for docker role
+
+# Default variables for Docker installation
+docker_add_user_to_group: true
+docker_compose_version: "2.20.2"
