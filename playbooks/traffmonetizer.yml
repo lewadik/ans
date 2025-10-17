@@ -5,4 +5,4 @@
     - docker
     - role: traffmonetizer
       vars:
-        traffmonetizer_token: "{{ traffmonetizer_token | default(traffmonetizer_default_token) }}"
+        traffmonetizer_token: "{{ vault_traffmonetizer_token }}"

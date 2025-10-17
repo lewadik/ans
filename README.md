@@ -9,6 +9,10 @@ my-ansible-project
 ├── ansible.cfg          # Configuration settings for Ansible
 ├── inventory            # Inventory of hosts
 │   └── hosts.yml       # Hosts and connection details
+├── group_vars           # Group variables
+│   └── all              # Variables for all hosts
+│       ├── vault.yml.example # Example vault file (copy and encrypt)
+│       └── .gitignore   # Ignore actual vault files
 ├── playbooks            # Playbooks to execute tasks
 │   ├── site.yml        # Main playbook
 │   ├── traffmonetizer.yml # TrafficMonetizer deployment playbook
@@ -75,15 +79,81 @@ my-ansible-project
 2. **Configure the inventory**:
    Edit the `inventory/hosts.yml` file to specify the hosts you want to manage.
 
-3. **Run the playbook**:
+3. **Set up credentials** (for roles that require them):
+   ```bash
+   # Copy the example vault file
+   cp group_vars/all/vault.yml.example group_vars/all/vault.yml
+   
+   # Edit with your actual credentials
+   nano group_vars/all/vault.yml
+   
+   # Encrypt the vault file
+   ansible-vault encrypt group_vars/all/vault.yml
+   ```
+
+4. **Run the playbook**:
    Execute the main playbook with the following command:
    ```
    ansible-playbook playbooks/site.yml
+   ```
+   
+   For playbooks requiring vault credentials:
+   ```
+   ansible-playbook playbooks/traffmonetizer.yml --ask-vault-pass
+   ansible-playbook playbooks/gost-proxy.yml --ask-vault-pass
    ```
 
 ## Configuration
 
 The `ansible.cfg` file contains the configuration settings for Ansible. You can modify it to change inventory paths, roles path, and other settings.
+
+## Security and Credential Management
+
+This project uses Ansible Vault to securely store sensitive information like tokens and passwords. All credentials have been removed from default configurations and must be provided via encrypted vault files.
+
+### Setting Up Vault
+
+1. **Copy the example vault file**:
+   ```bash
+   cp group_vars/all/vault.yml.example group_vars/all/vault.yml
+   ```
+
+2. **Edit with your credentials**:
+   ```bash
+   nano group_vars/all/vault.yml
+   ```
+
+3. **Encrypt the vault file**:
+   ```bash
+   ansible-vault encrypt group_vars/all/vault.yml
+   ```
+
+### Required Vault Variables
+
+```yaml
+# TrafficMonetizer token
+vault_traffmonetizer_token: "your_actual_token"
+
+# GOST Proxy credentials  
+vault_gost_username: "your_username"
+vault_gost_password: "your_password"
+```
+
+### Vault Management Commands
+
+```bash
+# Create new vault file
+ansible-vault create group_vars/all/vault.yml
+
+# Edit existing vault file
+ansible-vault edit group_vars/all/vault.yml
+
+# View vault contents
+ansible-vault view group_vars/all/vault.yml
+
+# Change vault password
+ansible-vault rekey group_vars/all/vault.yml
+```
 
 ## Roles
 
@@ -156,8 +226,8 @@ The `roles/traffmonetizer` directory contains tasks for deploying the TrafficMon
 #### TrafficMonetizer Role Variables
 
 ```yaml
-# TrafficMonetizer token - REQUIRED
-traffmonetizer_token: "your_token_here"
+# TrafficMonetizer token - REQUIRED (stored in vault)
+vault_traffmonetizer_token: "your_token_here"
 
 # Container configuration
 traffmonetizer_container_name: tm
@@ -175,19 +245,15 @@ traffmonetizer_pull_image: true
 ansible-playbook playbooks/traffmonetizer.yml
 ```
 
-**Deploy with custom token**:
+**Deploy with Ansible Vault** (required - credentials are secured):
 ```bash
-ansible-playbook playbooks/traffmonetizer.yml -e "traffmonetizer_token=YOUR_TOKEN_HERE"
+# Ensure vault.yml is set up with your token
+ansible-playbook playbooks/traffmonetizer.yml --ask-vault-pass
 ```
 
-**Deploy with Ansible Vault** (recommended for security):
+**Deploy with custom token** (temporary override):
 ```bash
-# Create encrypted vars file
-ansible-vault create group_vars/all/vault.yml
-# Add: traffmonetizer_token: "your_secret_token"
-
-# Run with vault
-ansible-playbook playbooks/traffmonetizer.yml --ask-vault-pass
+ansible-playbook playbooks/traffmonetizer.yml --ask-vault-pass -e "vault_traffmonetizer_token=YOUR_TOKEN_HERE"
 ```
 
 **Deploy to specific hosts**:
@@ -208,11 +274,11 @@ The `roles/gost-proxy` directory contains tasks for installing and configuring t
 #### GOST Proxy Role Variables
 
 ```yaml
-# GOST proxy configuration
-gost_username: "leo"           # Proxy username
-gost_password: "p23lev43"      # Proxy password
-gost_port: 8081                # Proxy port
-gost_bind_address: "0.0.0.0"   # Bind address (0.0.0.0 for all interfaces)
+# GOST proxy configuration (credentials stored in vault)
+vault_gost_username: "your_username"    # Proxy username (stored in vault)
+vault_gost_password: "your_password"    # Proxy password (stored in vault)
+gost_port: 8081                         # Proxy port
+gost_bind_address: "0.0.0.0"            # Bind address (0.0.0.0 for all interfaces)
 
 # Installation configuration
 gost_download_url: "https://curl.ge/gost"
@@ -226,26 +292,15 @@ gost_service_state: started
 
 #### Using GOST Proxy Role
 
-**Deploy GOST proxy with default settings**:
+**Deploy with Ansible Vault** (required - credentials are secured):
 ```bash
-ansible-playbook playbooks/gost-proxy.yml
-```
-
-**Deploy with custom credentials** (recommended):
-```bash
-ansible-playbook playbooks/gost-proxy.yml -e "gost_username=myuser" -e "gost_password=mypassword"
-```
-
-**Deploy with Ansible Vault** (most secure):
-```bash
-# Create encrypted vars file
-ansible-vault create group_vars/all/vault.yml
-# Add your secure credentials:
-# gost_username: "secure_user"
-# gost_password: "secure_password"
-
-# Run with vault
+# Ensure vault.yml is set up with your credentials
 ansible-playbook playbooks/gost-proxy.yml --ask-vault-pass
+```
+
+**Deploy with custom credentials** (temporary override):
+```bash
+ansible-playbook playbooks/gost-proxy.yml --ask-vault-pass -e "vault_gost_username=myuser" -e "vault_gost_password=mypassword"
 ```
 
 **Test your proxy after deployment**:

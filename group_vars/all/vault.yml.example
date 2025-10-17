@@ -1,0 +1,11 @@
+# Example vault file - Copy to vault.yml and encrypt with ansible-vault
+# Run: ansible-vault create group_vars/all/vault.yml
+# Or: cp group_vars/all/vault.yml.example group_vars/all/vault.yml && ansible-vault encrypt group_vars/all/vault.yml
+
+---
+# TrafficMonetizer credentials
+vault_traffmonetizer_token: "your_traffmonetizer_token_here"
+
+# GOST Proxy credentials
+vault_gost_username: "your_gost_username"
+vault_gost_password: "your_gost_password"

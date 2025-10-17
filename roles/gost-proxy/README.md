@@ -23,8 +23,8 @@ gost_home_dir: "/var/lib/gost"
 gost_config_dir: "/etc/gost"
 
 # GOST proxy configuration
-gost_username: "leo"
-gost_password: "p23lev43"
+gost_username: "your_username"     # Proxy username (use vault_gost_username)
+gost_password: "your_password"     # Proxy password (use vault_gost_password)
 gost_port: 8081
 gost_bind_address: "0.0.0.0"
 
@@ -57,8 +57,8 @@ None.
   roles:
     - role: gost-proxy
       vars:
-        gost_username: "myuser"
-        gost_password: "mypassword"
+        vault_gost_username: "{{ vault_gost_username }}"
+        vault_gost_password: "{{ vault_gost_password }}"
         gost_port: 9090
         gost_bind_address: "127.0.0.1"
 ```
@@ -72,8 +72,8 @@ None.
 ansible-vault create group_vars/all/vault.yml
 
 # Add your credentials:
-gost_username: "your_secure_username"
-gost_password: "your_secure_password"
+vault_gost_username: "your_secure_username"
+vault_gost_password: "your_secure_password"
 
 # Run playbook with vault
 ansible-playbook -i inventory/hosts.yml playbooks/gost.yml --ask-vault-pass
@@ -110,7 +110,7 @@ sudo iptables -A INPUT -p tcp --dport 8081 -j ACCEPT
 
 After deployment, you can use the proxy with the displayed URL:
 ```
-http://leo:p23lev43@YOUR_PUBLIC_IP:8081
+http://username:password@YOUR_PUBLIC_IP:8081
 ```
 
 ## Service Management

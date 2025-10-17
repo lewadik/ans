@@ -11,8 +11,8 @@ gost_home_dir: "/var/lib/gost"
 gost_config_dir: "/etc/gost"
 
 # GOST proxy configuration
-gost_username: "leo"
-gost_password: "p23lev43"
+gost_username: "{{ vault_gost_username | default('username') }}"
+gost_password: "{{ vault_gost_password | default('password') }}"
 gost_port: 8081
 gost_bind_address: "0.0.0.0"
 

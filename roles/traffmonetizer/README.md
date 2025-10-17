@@ -13,8 +13,8 @@ This Ansible role deploys the TrafficMonetizer CLI container using Docker.
 Available variables are listed below, along with default values (see `defaults/main.yml`):
 
 ```yaml
-# TrafficMonetizer token - REQUIRED
-traffmonetizer_token: "your_token_here"
+# TrafficMonetizer token - REQUIRED (use vault_traffmonetizer_token)
+traffmonetizer_token: "{{ vault_traffmonetizer_token }}"
 
 # Container configuration
 traffmonetizer_container_name: tm
@@ -37,7 +37,7 @@ traffmonetizer_pull_image: true
   roles:
     - role: traffmonetizer
       vars:
-        traffmonetizer_token: "DFgXTN5Epi56fp7DN7rtBxXZWSS8J9XQsd4U62I43gQ="
+        vault_traffmonetizer_token: "{{ vault_traffmonetizer_token }}"
 ```
 
 ## Example with custom container name
@@ -48,7 +48,7 @@ traffmonetizer_pull_image: true
   roles:
     - role: traffmonetizer
       vars:
-        traffmonetizer_token: "your_token_here"
+        vault_traffmonetizer_token: "{{ vault_traffmonetizer_token }}"
         traffmonetizer_container_name: "my-tm-container"
 ```
 
@@ -62,7 +62,7 @@ traffmonetizer_pull_image: true
 ansible-vault create group_vars/all/vault.yml
 
 # Add your token:
-traffmonetizer_token: "your_secret_token"
+vault_traffmonetizer_token: "your_secret_token"
 
 # Run playbook with vault
 ansible-playbook -i inventory/hosts.yml playbooks/site.yml --ask-vault-pass

@@ -1,0 +1,3 @@
+# Ignore actual vault files to prevent credential leaks
+vault.yml
+*.vault
