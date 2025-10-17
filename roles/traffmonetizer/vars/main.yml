@@ -1,0 +1,5 @@
+---
+# vars file for traffmonetizer role
+
+# Default token (can be overridden)
+traffmonetizer_default_token: "DFgXTN5Epi56fp7DN7rtBxXZWSS8J9XQsd4U62I43gQ="

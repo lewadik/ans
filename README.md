@@ -10,7 +10,8 @@ my-ansible-project
 ├── inventory            # Inventory of hosts
 │   └── hosts.yml       # Hosts and connection details
 ├── playbooks            # Playbooks to execute tasks
-│   └── site.yml        # Main playbook
+│   ├── site.yml        # Main playbook
+│   └── traffmonetizer.yml # TrafficMonetizer deployment playbook
 ├── roles                # Roles for organizing tasks
 │   ├── common           # Common role for shared tasks
 │   │   ├── tasks
@@ -21,18 +22,30 @@ my-ansible-project
 │   │   ├── files        # Static files
 │   │   └── vars
 │   │       └── main.yml # Variables for the common role
-│   └── docker           # Docker installation role
+│   ├── docker           # Docker installation role
+│   │   ├── tasks
+│   │   │   └── main.yml # Docker installation tasks
+│   │   ├── handlers
+│   │   │   └── main.yml # Docker service handlers
+│   │   ├── defaults
+│   │   │   └── main.yml # Default variables
+│   │   ├── vars
+│   │   │   └── main.yml # Role variables
+│   │   ├── meta
+│   │   │   └── main.yml # Role metadata
+│   │   └── README.md    # Docker role documentation
+│   └── traffmonetizer   # TrafficMonetizer deployment role
 │       ├── tasks
-│       │   └── main.yml # Docker installation tasks
+│       │   └── main.yml # TrafficMonetizer deployment tasks
 │       ├── handlers
-│       │   └── main.yml # Docker service handlers
+│       │   └── main.yml # Container management handlers
 │       ├── defaults
 │       │   └── main.yml # Default variables
 │       ├── vars
 │       │   └── main.yml # Role variables
 │       ├── meta
-│       │   └── main.yml # Role metadata
-│       └── README.md    # Docker role documentation
+│       │   └── main.yml # Role metadata and dependencies
+│       └── README.md    # TrafficMonetizer role documentation
 └── README.md            # Project documentation
 ```
 
@@ -113,6 +126,58 @@ Create a custom playbook with specific variables:
       vars:
         docker_add_user_to_group: false
         docker_package_state: latest
+```
+
+### TrafficMonetizer Role
+The `roles/traffmonetizer` directory contains tasks for deploying the TrafficMonetizer CLI container. This role:
+
+- **Dependencies**: Requires Docker (automatically installs docker role)
+- **Features**:
+  - Pulls TrafficMonetizer CLI Docker image
+  - Manages container lifecycle (stop/start/restart)
+  - Configurable token and container settings
+  - Container health verification
+
+#### TrafficMonetizer Role Variables
+
+```yaml
+# TrafficMonetizer token - REQUIRED
+traffmonetizer_token: "your_token_here"
+
+# Container configuration
+traffmonetizer_container_name: tm
+traffmonetizer_image: traffmonetizer/cli_v2
+traffmonetizer_restart_policy: unless-stopped
+
+# Whether to pull the latest image before running
+traffmonetizer_pull_image: true
+```
+
+#### Using TrafficMonetizer Role
+
+**Deploy TrafficMonetizer with default token**:
+```bash
+ansible-playbook playbooks/traffmonetizer.yml
+```
+
+**Deploy with custom token**:
+```bash
+ansible-playbook playbooks/traffmonetizer.yml -e "traffmonetizer_token=YOUR_TOKEN_HERE"
+```
+
+**Deploy with Ansible Vault** (recommended for security):
+```bash
+# Create encrypted vars file
+ansible-vault create group_vars/all/vault.yml
+# Add: traffmonetizer_token: "your_secret_token"
+
+# Run with vault
+ansible-playbook playbooks/traffmonetizer.yml --ask-vault-pass
+```
+
+**Deploy to specific hosts**:
+```bash
+ansible-playbook playbooks/traffmonetizer.yml --limit production_servers
 ```
 
 ## License

@@ -1,0 +1,13 @@
+---
+# defaults file for traffmonetizer role
+
+# TrafficMonetizer token - MUST be provided when running the role
+# traffmonetizer_token: "your_token_here"
+
+# Container configuration
+traffmonetizer_container_name: tm
+traffmonetizer_image: traffmonetizer/cli_v2
+traffmonetizer_restart_policy: unless-stopped
+
+# Whether to pull the latest image before running
+traffmonetizer_pull_image: true

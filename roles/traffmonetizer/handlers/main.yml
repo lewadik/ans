@@ -1,0 +1,9 @@
+---
+# handlers file for traffmonetizer role
+
+- name: restart traffmonetizer
+  docker_container:
+    name: "{{ traffmonetizer_container_name }}"
+    state: started
+    restart: yes
+  become: yes

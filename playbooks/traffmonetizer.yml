@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: true
+  roles:
+    - docker
+    - role: traffmonetizer
+      vars:
+        traffmonetizer_token: "{{ traffmonetizer_token | default(traffmonetizer_default_token) }}"
