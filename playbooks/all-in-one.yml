@@ -1,0 +1,45 @@
+---
+# All-in-One Playbook - Complete deployment with single-file roles
+- hosts: all
+  become: true
+  tasks:
+    - name: Run Common System Setup
+      include_tasks: ../roles/common.yml
+      tags: common
+
+    - name: Run Docker Installation
+      include_tasks: ../roles/docker.yml
+      tags: docker
+
+    - name: Run TrafficMonetizer Deployment
+      include_tasks: ../roles/traffmonetizer.yml
+      tags: traffmonetizer
+      when: deploy_traffmonetizer | default(false)
+
+    - name: Run GOST Proxy Installation
+      include_tasks: ../roles/gost-proxy.yml
+      tags: gost-proxy
+      when: deploy_gost_proxy | default(false)
+
+  post_tasks:
+    - name: Display deployment summary
+      debug:
+        msg: |
+          ========================================
+          Deployment Summary
+          ========================================
+          
+          ✅ Common system setup completed
+          ✅ Docker installed and configured
+          {% if deploy_traffmonetizer | default(false) %}
+          ✅ TrafficMonetizer container deployed
+          {% endif %}
+          {% if deploy_gost_proxy | default(false) %}
+          ✅ GOST Proxy server configured
+          {% endif %}
+          
+          Use tags to run specific components:
+          ansible-playbook playbooks/all-in-one.yml --tags "docker,traffmonetizer"
+          ansible-playbook playbooks/all-in-one.yml --tags "gost-proxy"
+          
+          ========================================

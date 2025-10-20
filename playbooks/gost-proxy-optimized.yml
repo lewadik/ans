@@ -1,0 +1,7 @@
+---
+# Optimized GOST Proxy Playbook - Uses single-file roles
+- hosts: all
+  become: true
+  tasks:
+    - name: Run GOST Proxy Installation and Configuration
+      include_tasks: ../roles/gost-proxy.yml

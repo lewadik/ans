@@ -14,10 +14,14 @@ my-ansible-project
 │       ├── vault.yml.example # Example vault file (copy and encrypt)
 │       └── .gitignore   # Ignore actual vault files
 ├── playbooks            # Playbooks to execute tasks
-│   ├── site.yml        # Main playbook
+│   ├── site.yml        # Main playbook (traditional structure)
 │   ├── traffmonetizer.yml # TrafficMonetizer deployment playbook
-│   └── gost-proxy.yml  # GOST proxy deployment playbook
-├── roles                # Roles for organizing tasks
+│   ├── gost-proxy.yml  # GOST proxy deployment playbook
+│   ├── site-optimized.yml # Optimized main playbook
+│   ├── traffmonetizer-optimized.yml # Optimized TrafficMonetizer playbook
+│   ├── gost-proxy-optimized.yml # Optimized GOST proxy playbook
+│   └── all-in-one.yml  # Complete deployment playbook
+├── roles                # Roles for organizing tasks (traditional structure)
 │   ├── common           # Common role for shared tasks
 │   │   ├── tasks
 │   │   │   └── main.yml # Main tasks for the common role
@@ -65,6 +69,11 @@ my-ansible-project
 │       ├── meta
 │       │   └── main.yml # Role metadata
 │       └── README.md    # GOST proxy role documentation
+├── roles                # Optimized single-file roles
+│   ├── common.yml      # Common system setup (single file)
+│   ├── docker.yml      # Docker installation (single file)
+│   ├── traffmonetizer.yml # TrafficMonetizer deployment (single file)
+│   └── gost-proxy.yml  # GOST proxy server (single file)
 └── README.md            # Project documentation
 ```
 
@@ -92,15 +101,28 @@ my-ansible-project
    ```
 
 4. **Run the playbook**:
-   Execute the main playbook with the following command:
-   ```
-   ansible-playbook playbooks/site.yml
-   ```
    
-   For playbooks requiring vault credentials:
-   ```
+   **Traditional structure** (multi-file roles):
+   ```bash
+   ansible-playbook playbooks/site.yml
    ansible-playbook playbooks/traffmonetizer.yml --ask-vault-pass
    ansible-playbook playbooks/gost-proxy.yml --ask-vault-pass
+   ```
+   
+   **Optimized structure** (single-file roles):
+   ```bash
+   # Basic setup
+   ansible-playbook playbooks/site-optimized.yml
+   
+   # With credentials
+   ansible-playbook playbooks/traffmonetizer-optimized.yml --ask-vault-pass
+   ansible-playbook playbooks/gost-proxy-optimized.yml --ask-vault-pass
+   
+   # All-in-one deployment
+   ansible-playbook playbooks/all-in-one.yml --ask-vault-pass -e "deploy_traffmonetizer=true deploy_gost_proxy=true"
+   
+   # Selective deployment with tags
+   ansible-playbook playbooks/all-in-one.yml --tags "docker,traffmonetizer" --ask-vault-pass
    ```
 
 ## Configuration
@@ -153,6 +175,41 @@ ansible-vault view group_vars/all/vault.yml
 
 # Change vault password
 ansible-vault rekey group_vars/all/vault.yml
+```
+
+## Optimized Single-File Roles
+
+This project now includes optimized single-file roles that consolidate all functionality into one YAML file per role. These are simpler to manage and deploy:
+
+### Available Optimized Roles
+
+- **`roles/common.yml`**: System setup and common packages
+- **`roles/docker.yml`**: Complete Docker installation for all platforms
+- **`roles/traffmonetizer.yml`**: TrafficMonetizer container deployment
+- **`roles/gost-proxy.yml`**: GOST proxy server installation and configuration
+
+### Benefits of Single-File Roles
+
+✅ **Simplified Structure**: One file per role instead of multiple directories  
+✅ **Easy Maintenance**: All logic in one place  
+✅ **Faster Deployment**: Reduced file I/O operations  
+✅ **Better Portability**: Easy to copy and share individual roles  
+✅ **Integrated Variables**: No separate defaults/vars files needed  
+
+### Usage Examples
+
+```bash
+# Deploy individual components
+ansible-playbook playbooks/docker-optimized.yml
+ansible-playbook playbooks/gost-proxy-optimized.yml --ask-vault-pass
+
+# Deploy everything at once
+ansible-playbook playbooks/all-in-one.yml --ask-vault-pass \
+  -e "deploy_traffmonetizer=true deploy_gost_proxy=true"
+
+# Use tags for selective deployment
+ansible-playbook playbooks/all-in-one.yml --tags "common,docker"
+ansible-playbook playbooks/all-in-one.yml --tags "gost-proxy" --ask-vault-pass
 ```
 
 ## Roles

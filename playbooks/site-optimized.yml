@@ -1,0 +1,10 @@
+---
+# Optimized Site Playbook - Uses single-file roles
+- hosts: all
+  become: true
+  tasks:
+    - name: Run Common Setup
+      include_tasks: ../roles/common.yml
+
+    - name: Run Docker Installation
+      include_tasks: ../roles/docker.yml
