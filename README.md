@@ -1,377 +1,111 @@
-# My Ansible Project
+# Ultra Light Ansible Project
 
-This project is an Ansible setup designed to automate the configuration and management of servers. Below are the details of the project structure and how to use it.
+Minimal Ansible setup with single-file roles for maximum simplicity and speed.
 
 ## Project Structure
 
 ```
-my-ansible-project
-├── ansible.cfg          # Configuration settings for Ansible
-├── inventory            # Inventory of hosts
-│   └── hosts.yml       # Hosts and connection details
-├── group_vars           # Group variables
-│   └── all              # Variables for all hosts
-│       ├── vault.yml.example # Example vault file (copy and encrypt)
-│       └── .gitignore   # Ignore actual vault files
-├── playbooks            # Playbooks to execute tasks
-│   ├── site.yml        # Main playbook (traditional structure)
-│   ├── traffmonetizer.yml # TrafficMonetizer deployment playbook
-│   ├── gost-proxy.yml  # GOST proxy deployment playbook
-│   ├── site-optimized.yml # Optimized main playbook
-│   ├── traffmonetizer-optimized.yml # Optimized TrafficMonetizer playbook
-│   ├── gost-proxy-optimized.yml # Optimized GOST proxy playbook
-│   └── all-in-one.yml  # Complete deployment playbook
-├── roles                # Roles for organizing tasks (traditional structure)
-│   ├── common           # Common role for shared tasks
-│   │   ├── tasks
-│   │   │   └── main.yml # Main tasks for the common role
-│   │   ├── handlers
-│   │   │   └── main.yml # Handlers for the common role
-│   │   ├── templates    # Jinja2 templates
-│   │   ├── files        # Static files
-│   │   └── vars
-│   │       └── main.yml # Variables for the common role
-│   ├── docker           # Docker installation role
-│   │   ├── tasks
-│   │   │   └── main.yml # Docker installation tasks
-│   │   ├── handlers
-│   │   │   └── main.yml # Docker service handlers
-│   │   ├── defaults
-│   │   │   └── main.yml # Default variables
-│   │   ├── vars
-│   │   │   └── main.yml # Role variables
-│   │   ├── meta
-│   │   │   └── main.yml # Role metadata
-│   │   └── README.md    # Docker role documentation
-│   ├── traffmonetizer   # TrafficMonetizer deployment role
-│   │   ├── tasks
-│   │   │   └── main.yml # TrafficMonetizer deployment tasks
-│   │   ├── handlers
-│   │   │   └── main.yml # Container management handlers
-│   │   ├── defaults
-│   │   │   └── main.yml # Default variables
-│   │   ├── vars
-│   │   │   └── main.yml # Role variables
-│   │   ├── meta
-│   │   │   └── main.yml # Role metadata and dependencies
-│   │   └── README.md    # TrafficMonetizer role documentation
-│   └── gost-proxy       # GOST proxy server role
-│       ├── tasks
-│       │   └── main.yml # GOST installation and configuration tasks
-│       ├── handlers
-│       │   └── main.yml # Service management handlers
-│       ├── templates
-│       │   └── gost.service.j2 # Systemd service template
-│       ├── defaults
-│       │   └── main.yml # Default variables
-│       ├── vars
-│       │   └── main.yml # Role variables
-│       ├── meta
-│       │   └── main.yml # Role metadata
-│       └── README.md    # GOST proxy role documentation
-├── roles                # Optimized single-file roles
-│   ├── common.yml      # Common system setup (single file)
-│   ├── docker.yml      # Docker installation (single file)
-│   ├── traffmonetizer.yml # TrafficMonetizer deployment (single file)
-│   └── gost-proxy.yml  # GOST proxy server (single file)
-└── README.md            # Project documentation
+my-ansible-project/
+├── ansible.cfg          # Ansible configuration
+├── inventory/
+│   └── hosts.yml       # Target hosts
+├── playbooks/          # Ultra light playbooks (6-18 lines each)
+│   ├── light-site.yml  # Basic setup
+│   ├── light-traffmonetizer.yml # TrafficMonetizer
+│   ├── light-gost.yml  # GOST proxy
+│   └── light-all.yml   # All-in-one
+├── roles/              # Single-file roles (10-40 lines each)
+│   ├── common.yml      # System setup
+│   ├── docker.yml      # Docker install
+│   ├── traffmonetizer.yml # Container deploy
+│   └── gost-proxy.yml  # Proxy server
+├── vault-light.yml.example # Credentials template
+└── README.md           # This file
 ```
 
-## Getting Started
+## Quick Start
 
-1. **Clone the repository**:
-   ```
-   git clone <repository-url>
-   cd my-ansible-project
-   ```
-
-2. **Configure the inventory**:
-   Edit the `inventory/hosts.yml` file to specify the hosts you want to manage.
-
-3. **Set up credentials** (for roles that require them):
+1. **Setup credentials**:
    ```bash
-   # Copy the example vault file
-   cp group_vars/all/vault.yml.example group_vars/all/vault.yml
-   
-   # Edit with your actual credentials
-   nano group_vars/all/vault.yml
-   
-   # Encrypt the vault file
-   ansible-vault encrypt group_vars/all/vault.yml
+   cp vault-light.yml.example vault.yml
+   nano vault.yml  # Add your tokens/passwords
+   ansible-vault encrypt vault.yml
    ```
 
-4. **Run the playbook**:
-   
-   **Traditional structure** (multi-file roles):
+2. **Deploy services**:
    ```bash
-   ansible-playbook playbooks/site.yml
-   ansible-playbook playbooks/traffmonetizer.yml --ask-vault-pass
-   ansible-playbook playbooks/gost-proxy.yml --ask-vault-pass
-   ```
+   # Basic system + Docker
+   ansible-playbook playbooks/light-site.yml
    
-   **Optimized structure** (single-file roles):
-   ```bash
-   # Basic setup
-   ansible-playbook playbooks/site-optimized.yml
+   # TrafficMonetizer
+   ansible-playbook playbooks/light-traffmonetizer.yml --ask-vault-pass
    
-   # With credentials
-   ansible-playbook playbooks/traffmonetizer-optimized.yml --ask-vault-pass
-   ansible-playbook playbooks/gost-proxy-optimized.yml --ask-vault-pass
+   # GOST Proxy
+   ansible-playbook playbooks/light-gost.yml --ask-vault-pass
    
-   # All-in-one deployment
-   ansible-playbook playbooks/all-in-one.yml --ask-vault-pass -e "deploy_traffmonetizer=true deploy_gost_proxy=true"
-   
-   # Selective deployment with tags
-   ansible-playbook playbooks/all-in-one.yml --tags "docker,traffmonetizer" --ask-vault-pass
+   # All services at once
+   ansible-playbook playbooks/light-all.yml --ask-vault-pass \
+     -e "deploy_traffmonetizer=true deploy_gost=true"
    ```
 
-## Configuration
+## Ultra Light Roles
 
-The `ansible.cfg` file contains the configuration settings for Ansible. You can modify it to change inventory paths, roles path, and other settings.
+### `roles/common.yml` (10 lines)
+- Installs: git, curl, vim, wget, htop
+- Creates /opt/common directory
 
-## Security and Credential Management
+### `roles/docker.yml` (35 lines)  
+- Multi-platform Docker installation (Ubuntu/Debian + CentOS/RHEL)
+- Adds user to docker group
+- Starts and enables service
 
-This project uses Ansible Vault to securely store sensitive information like tokens and passwords. All credentials have been removed from default configurations and must be provided via encrypted vault files.
+### `roles/traffmonetizer.yml` (20 lines)
+- Validates Docker installation
+- Deploys TrafficMonetizer container with token
+- Uses restart policy: unless-stopped
 
-### Setting Up Vault
+### `roles/gost-proxy.yml` (40 lines)
+- Downloads GOST binary from curl.ge/gost
+- Creates systemd service with credentials
+- Shows public IP and proxy URL
 
-1. **Copy the example vault file**:
-   ```bash
-   cp group_vars/all/vault.yml.example group_vars/all/vault.yml
-   ```
+## Vault Configuration
 
-2. **Edit with your credentials**:
-   ```bash
-   nano group_vars/all/vault.yml
-   ```
-
-3. **Encrypt the vault file**:
-   ```bash
-   ansible-vault encrypt group_vars/all/vault.yml
-   ```
-
-### Required Vault Variables
-
+Simple 3-line vault file:
 ```yaml
-# TrafficMonetizer token
-vault_traffmonetizer_token: "your_actual_token"
-
-# GOST Proxy credentials  
-vault_gost_username: "your_username"
+vault_traffmonetizer_token: "your_token"
+vault_gost_username: "your_username"  
 vault_gost_password: "your_password"
 ```
 
-### Vault Management Commands
+## Usage Examples
 
 ```bash
-# Create new vault file
-ansible-vault create group_vars/all/vault.yml
+# Quick system setup
+ansible-playbook playbooks/light-site.yml
 
-# Edit existing vault file
-ansible-vault edit group_vars/all/vault.yml
-
-# View vault contents
-ansible-vault view group_vars/all/vault.yml
-
-# Change vault password
-ansible-vault rekey group_vars/all/vault.yml
-```
-
-## Optimized Single-File Roles
-
-This project now includes optimized single-file roles that consolidate all functionality into one YAML file per role. These are simpler to manage and deploy:
-
-### Available Optimized Roles
-
-- **`roles/common.yml`**: System setup and common packages
-- **`roles/docker.yml`**: Complete Docker installation for all platforms
-- **`roles/traffmonetizer.yml`**: TrafficMonetizer container deployment
-- **`roles/gost-proxy.yml`**: GOST proxy server installation and configuration
-
-### Benefits of Single-File Roles
-
-✅ **Simplified Structure**: One file per role instead of multiple directories  
-✅ **Easy Maintenance**: All logic in one place  
-✅ **Faster Deployment**: Reduced file I/O operations  
-✅ **Better Portability**: Easy to copy and share individual roles  
-✅ **Integrated Variables**: No separate defaults/vars files needed  
-
-### Usage Examples
-
-```bash
-# Deploy individual components
-ansible-playbook playbooks/docker-optimized.yml
-ansible-playbook playbooks/gost-proxy-optimized.yml --ask-vault-pass
-
-# Deploy everything at once
-ansible-playbook playbooks/all-in-one.yml --ask-vault-pass \
-  -e "deploy_traffmonetizer=true deploy_gost_proxy=true"
+# Deploy specific services
+ansible-playbook playbooks/light-traffmonetizer.yml --ask-vault-pass
+ansible-playbook playbooks/light-gost.yml --ask-vault-pass
 
 # Use tags for selective deployment
-ansible-playbook playbooks/all-in-one.yml --tags "common,docker"
-ansible-playbook playbooks/all-in-one.yml --tags "gost-proxy" --ask-vault-pass
+ansible-playbook playbooks/light-all.yml --tags "docker" 
+ansible-playbook playbooks/light-all.yml --tags "gost" --ask-vault-pass
+
+# Deploy everything
+ansible-playbook playbooks/light-all.yml --ask-vault-pass \
+  -e "deploy_traffmonetizer=true deploy_gost=true"
 ```
 
-## Roles
+## Benefits
 
-### Common Role
-The `roles/common` directory contains tasks, handlers, templates, files, and variables for the common role with shared system configurations.
-
-### Docker Role
-The `roles/docker` directory contains tasks for installing Docker CE on Linux systems. This role supports:
-
-- **Supported Platforms**: Ubuntu, Debian, CentOS, RHEL
-- **Features**: 
-  - Automatic repository setup
-  - Docker CE installation with containerd
-  - User group management (adds users to docker group)
-  - Service management (starts and enables Docker)
-  - Installation verification
-
-#### Docker Role Variables
-
-You can customize the Docker installation by setting these variables:
-
-```yaml
-# Whether to add the current user to the docker group (default: true)
-docker_add_user_to_group: true
-
-# Docker service state (default: started)
-docker_service_state: started
-
-# Enable Docker service on boot (default: true)
-docker_service_enabled: true
-
-# Package installation state (default: present)
-docker_package_state: present
-```
-
-#### Using Docker Role
-
-**Install Docker on all hosts** (default behavior):
-```bash
-ansible-playbook playbooks/site.yml
-```
-
-**Install Docker on specific host groups**:
-```bash
-ansible-playbook playbooks/site.yml --limit docker_hosts
-```
-
-**Custom Docker installation**:
-Create a custom playbook with specific variables:
-```yaml
-- hosts: servers
-  become: true
-  roles:
-    - role: docker
-      vars:
-        docker_add_user_to_group: false
-        docker_package_state: latest
-```
-
-### TrafficMonetizer Role
-The `roles/traffmonetizer` directory contains tasks for deploying the TrafficMonetizer CLI container. This role:
-
-- **Dependencies**: Requires Docker (automatically installs docker role)
-- **Features**:
-  - Pulls TrafficMonetizer CLI Docker image
-  - Manages container lifecycle (stop/start/restart)
-  - Configurable token and container settings
-  - Container health verification
-
-#### TrafficMonetizer Role Variables
-
-```yaml
-# TrafficMonetizer token - REQUIRED (stored in vault)
-vault_traffmonetizer_token: "your_token_here"
-
-# Container configuration
-traffmonetizer_container_name: tm
-traffmonetizer_image: traffmonetizer/cli_v2
-traffmonetizer_restart_policy: unless-stopped
-
-# Whether to pull the latest image before running
-traffmonetizer_pull_image: true
-```
-
-#### Using TrafficMonetizer Role
-
-**Deploy TrafficMonetizer with default token**:
-```bash
-ansible-playbook playbooks/traffmonetizer.yml
-```
-
-**Deploy with Ansible Vault** (required - credentials are secured):
-```bash
-# Ensure vault.yml is set up with your token
-ansible-playbook playbooks/traffmonetizer.yml --ask-vault-pass
-```
-
-**Deploy with custom token** (temporary override):
-```bash
-ansible-playbook playbooks/traffmonetizer.yml --ask-vault-pass -e "vault_traffmonetizer_token=YOUR_TOKEN_HERE"
-```
-
-**Deploy to specific hosts**:
-```bash
-ansible-playbook playbooks/traffmonetizer.yml --limit production_servers
-```
-
-### GOST Proxy Role
-The `roles/gost-proxy` directory contains tasks for installing and configuring the GOST proxy server. This role:
-
-- **Features**:
-  - Downloads GOST binary from curl.ge/gost
-  - Creates systemd service for automatic startup
-  - Configurable proxy credentials and port
-  - Public IP detection and display
-  - Service management and monitoring
-
-#### GOST Proxy Role Variables
-
-```yaml
-# GOST proxy configuration (credentials stored in vault)
-vault_gost_username: "your_username"    # Proxy username (stored in vault)
-vault_gost_password: "your_password"    # Proxy password (stored in vault)
-gost_port: 8081                         # Proxy port
-gost_bind_address: "0.0.0.0"            # Bind address (0.0.0.0 for all interfaces)
-
-# Installation configuration
-gost_download_url: "https://curl.ge/gost"
-gost_install_path: "/usr/local/bin"
-gost_user: "gost"              # Service user
-
-# Service configuration
-gost_service_enabled: true
-gost_service_state: started
-```
-
-#### Using GOST Proxy Role
-
-**Deploy with Ansible Vault** (required - credentials are secured):
-```bash
-# Ensure vault.yml is set up with your credentials
-ansible-playbook playbooks/gost-proxy.yml --ask-vault-pass
-```
-
-**Deploy with custom credentials** (temporary override):
-```bash
-ansible-playbook playbooks/gost-proxy.yml --ask-vault-pass -e "vault_gost_username=myuser" -e "vault_gost_password=mypassword"
-```
-
-**Test your proxy after deployment**:
-```bash
-curl --proxy http://username:password@YOUR_PUBLIC_IP:8081 https://ipinfo.io/ip
-```
-
-#### Security Notes
-
-- Change default credentials for production use
-- Consider firewall rules for the proxy port
-- Use Ansible Vault for sensitive variables
-- Monitor proxy usage and access logs
+✅ **Ultra Minimal**: Total of 105 lines across all roles  
+✅ **No Dependencies**: Each role is completely self-contained  
+✅ **Fast Execution**: Minimal overhead, maximum speed  
+✅ **Easy to Understand**: Simple, readable code  
+✅ **Portable**: Copy any single file to use elsewhere  
+✅ **Secure**: Vault-based credential management
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for more details.
+MIT

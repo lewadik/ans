@@ -1,0 +1,6 @@
+---
+# Ultra Light GOST Proxy Playbook
+- hosts: all
+  become: true
+  tasks:
+    - include_tasks: ../roles/gost-proxy.yml

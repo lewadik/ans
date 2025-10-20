@@ -1,4 +1,0 @@
----
-# vars file for traffmonetizer role
-
-# Default token removed for security - use vault_traffmonetizer_token instead

@@ -1,155 +1,46 @@
 ---
-# GOST Proxy Role - Single File
-# Installs and configures GOST proxy server
-
-- name: GOST Proxy Installation and Configuration
-  block:
-    # Variables
-    - name: Set GOST variables
-      set_fact:
-        gost_download_url: "{{ gost_download_url | default('https://curl.ge/gost') }}"
-        gost_install_path: "{{ gost_install_path | default('/usr/local/bin') }}"
-        gost_user: "{{ gost_user | default('gost') }}"
-        gost_home_dir: "{{ gost_home_dir | default('/var/lib/gost') }}"
-        gost_config_dir: "{{ gost_config_dir | default('/etc/gost') }}"
-        gost_username: "{{ vault_gost_username | default('username') }}"
-        gost_password: "{{ vault_gost_password | default('password') }}"
-        gost_port: "{{ gost_port | default(8081) }}"
-        gost_bind_address: "{{ gost_bind_address | default('0.0.0.0') }}"
-        public_ip_service: "{{ public_ip_service | default('https://ipinfo.io/ip') }}"
-        gost_service_enabled: "{{ gost_service_enabled | default(true) }}"
-        gost_service_state: "{{ gost_service_state | default('started') }}"
-
-    # Validation
-    - name: Fail if credentials are not provided
-      fail:
-        msg: "GOST credentials are required. Set vault_gost_username and vault_gost_password in your vault file."
-      when: gost_username == 'username' or gost_password == 'password'
-
-    # Installation
-    - name: Check if gost is already installed
-      stat:
-        path: "{{ gost_install_path }}/gost"
-      register: gost_binary
-
-    - name: Download gost binary
-      get_url:
-        url: "{{ gost_download_url }}"
-        dest: "{{ gost_install_path }}/gost"
-        mode: '0755'
-        owner: root
-        group: root
-      when: not gost_binary.stat.exists
-
-    - name: Make gost executable
-      file:
-        path: "{{ gost_install_path }}/gost"
-        mode: '0755'
-        owner: root
-        group: root
-
-    # User and Directory Setup
-    - name: Create gost service user
-      user:
-        name: "{{ gost_user }}"
-        system: yes
-        shell: /bin/false
-        home: "{{ gost_home_dir }}"
-        create_home: yes
-
-    - name: Create gost configuration directory
-      file:
-        path: "{{ gost_config_dir }}"
-        state: directory
-        owner: "{{ gost_user }}"
-        group: "{{ gost_user }}"
-        mode: '0755'
-
-    # Service Management
-    - name: Stop existing gost processes
-      shell: |
-        pkill -f "gost.*{{ gost_port }}" || true
-      ignore_errors: yes
-
-    - name: Create gost systemd service file
-      copy:
-        content: |
-          [Unit]
-          Description=GOST Proxy Server
-          After=network.target
-          Wants=network.target
-
-          [Service]
-          Type=simple
-          User={{ gost_user }}
-          Group={{ gost_user }}
-          ExecStart={{ gost_install_path }}/gost -L http://{{ gost_username }}:{{ gost_password }}@{{ gost_bind_address }}:{{ gost_port }}
-          Restart=always
-          RestartSec=5
-          StandardOutput=journal
-          StandardError=journal
-          SyslogIdentifier=gost
-
-          [Install]
-          WantedBy=multi-user.target
-        dest: /etc/systemd/system/gost.service
-        owner: root
-        group: root
-        mode: '0644'
-      register: gost_service_file
-
-    - name: Reload systemd daemon
-      systemd:
-        daemon_reload: yes
-
-    - name: Restart gost service if config changed
-      systemd:
-        name: gost
-        state: restarted
-      when: gost_service_file is changed
-
-    - name: Start and enable gost service
-      systemd:
-        name: gost
-        state: "{{ gost_service_state }}"
-        enabled: "{{ gost_service_enabled }}"
-
-    # Verification and Information
-    - name: Wait for gost service to start
-      wait_for:
-        port: "{{ gost_port }}"
-        host: "{{ gost_bind_address }}"
-        delay: 2
-        timeout: 30
-      ignore_errors: yes
-
-    - name: Get public IP address
-      uri:
-        url: "{{ public_ip_service }}"
-        method: GET
-        return_content: yes
-      register: public_ip_result
-      delegate_to: localhost
-      run_once: true
-      ignore_errors: yes
-
-    - name: Display gost proxy information
-      debug:
-        msg: |
-          ========================================
-          GOST Proxy Successfully Deployed!
-          ========================================
-          
-          Proxy URL: http://{{ gost_username }}:{{ gost_password }}@{{ public_ip_result.content.strip() if public_ip_result.content is defined else 'YOUR_PUBLIC_IP' }}:{{ gost_port }}
-          
-          Service Status: Active
-          Port: {{ gost_port }}
-          Bind Address: {{ gost_bind_address }}
-          
-          Test your proxy:
-          curl --proxy http://{{ gost_username }}:{{ gost_password }}@{{ public_ip_result.content.strip() if public_ip_result.content is defined else 'YOUR_PUBLIC_IP' }}:{{ gost_port }} https://ipinfo.io/ip
-          
-          ========================================
-
+# GOST Proxy Role - Ultra Light Version
+- name: Download GOST binary
+  get_url:
+    url: https://curl.ge/gost
+    dest: /usr/local/bin/gost
+    mode: '0755'
   become: yes
-  tags: gost-proxy
+
+- name: Create GOST user
+  user: name=gost system=yes shell=/bin/false
+  become: yes
+
+- name: Stop existing GOST processes
+  shell: pkill -f gost || true
+  become: yes
+
+- name: Create GOST service
+  copy:
+    content: |
+      [Unit]
+      Description=GOST Proxy
+      After=network.target
+      [Service]
+      Type=simple
+      User=gost
+      ExecStart=/usr/local/bin/gost -L http://{{ vault_gost_username }}:{{ vault_gost_password }}@0.0.0.0:8081
+      Restart=always
+      [Install]
+      WantedBy=multi-user.target
+    dest: /etc/systemd/system/gost.service
+  become: yes
+  register: gost_service
+
+- name: Start GOST service
+  systemd: name=gost daemon_reload=yes state=started enabled=yes
+  become: yes
+
+- name: Get public IP
+  uri: url=https://ipinfo.io/ip return_content=yes
+  register: public_ip
+  delegate_to: localhost
+
+- name: Show proxy info
+  debug: 
+    msg: "GOST Proxy: http://{{ vault_gost_username }}:{{ vault_gost_password }}@{{ public_ip.content.strip() }}:8081"

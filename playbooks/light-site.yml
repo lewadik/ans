@@ -1,0 +1,7 @@
+---
+# Ultra Light Site Playbook
+- hosts: all
+  become: true
+  tasks:
+    - include_tasks: ../roles/common.yml
+    - include_tasks: ../roles/docker.yml

@@ -1,8 +1,0 @@
----
-# handlers file for docker role
-
-- name: restart docker
-  systemd:
-    name: docker
-    state: restarted
-  become: yes

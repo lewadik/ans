@@ -1,76 +1,25 @@
 ---
-# TrafficMonetizer Role - Single File
-# Deploys TrafficMonetizer CLI container using Docker
+# TrafficMonetizer Role - Ultra Light Version
+- name: Check Docker
+  command: docker --version
+  register: docker_check
+  failed_when: docker_check.rc != 0
+  changed_when: false
 
-- name: TrafficMonetizer Deployment
-  block:
-    # Variables
-    - name: Set TrafficMonetizer variables
-      set_fact:
-        traffmonetizer_token: "{{ vault_traffmonetizer_token | default('') }}"
-        traffmonetizer_container_name: "{{ traffmonetizer_container_name | default('tm') }}"
-        traffmonetizer_image: "{{ traffmonetizer_image | default('traffmonetizer/cli_v2') }}"
-        traffmonetizer_restart_policy: "{{ traffmonetizer_restart_policy | default('unless-stopped') }}"
-        traffmonetizer_pull_image: "{{ traffmonetizer_pull_image | default(true) }}"
-
-    # Prerequisites
-    - name: Check if Docker is installed
-      command: docker --version
-      register: docker_check
-      failed_when: false
-      changed_when: false
-
-    - name: Fail if Docker is not installed
-      fail:
-        msg: "Docker is not installed. Please run the docker role first."
-      when: docker_check.rc != 0
-
-    - name: Fail if token is not provided
-      fail:
-        msg: "TrafficMonetizer token is required. Set vault_traffmonetizer_token in your vault file."
-      when: traffmonetizer_token == ''
-
-    # Container Management
-    - name: Pull TrafficMonetizer Docker image
-      docker_image:
-        name: "{{ traffmonetizer_image }}"
-        source: pull
-        state: present
-      when: traffmonetizer_pull_image
-
-    - name: Stop existing TrafficMonetizer container if running
-      docker_container:
-        name: "{{ traffmonetizer_container_name }}"
-        state: absent
-      ignore_errors: yes
-
-    - name: Run TrafficMonetizer container
-      docker_container:
-        name: "{{ traffmonetizer_container_name }}"
-        image: "{{ traffmonetizer_image }}"
-        state: started
-        restart_policy: "{{ traffmonetizer_restart_policy }}"
-        detach: yes
-        command: "start accept --token {{ traffmonetizer_token }}"
-
-    # Verification
-    - name: Wait for container to start
-      pause:
-        seconds: 3
-
-    - name: Verify TrafficMonetizer container is running
-      docker_container_info:
-        name: "{{ traffmonetizer_container_name }}"
-      register: container_info
-
-    - name: Display container status
-      debug:
-        msg: |
-          TrafficMonetizer Container Status:
-          - Name: {{ traffmonetizer_container_name }}
-          - Status: {{ container_info.container.State.Status if container_info.exists else 'Not found' }}
-          - Image: {{ traffmonetizer_image }}
-          - Restart Policy: {{ traffmonetizer_restart_policy }}
-
+- name: Stop existing container
+  docker_container: name=tm state=absent
+  ignore_errors: yes
   become: yes
-  tags: traffmonetizer
+
+- name: Run TrafficMonetizer container
+  docker_container:
+    name: tm
+    image: traffmonetizer/cli_v2
+    state: started
+    restart_policy: unless-stopped
+    command: "start accept --token {{ vault_traffmonetizer_token }}"
+  become: yes
+  when: vault_traffmonetizer_token is defined
+
+- name: Show container status
+  debug: msg="TrafficMonetizer container deployed successfully"

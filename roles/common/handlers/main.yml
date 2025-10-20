@@ -1,9 +1,0 @@
-- name: Restart service
-  service:
-    name: my_service
-    state: restarted
-
-- name: Reload service
-  service:
-    name: my_service
-    state: reloaded

@@ -1,0 +1,21 @@
+---
+# Ultra Light All-in-One Playbook
+- hosts: all
+  become: true
+  tasks:
+    - include_tasks: ../roles/common.yml
+      tags: common
+    
+    - include_tasks: ../roles/docker.yml
+      tags: docker
+    
+    - include_tasks: ../roles/traffmonetizer.yml
+      tags: traffmonetizer
+      when: deploy_traffmonetizer | default(false)
+    
+    - include_tasks: ../roles/gost-proxy.yml
+      tags: gost
+      when: deploy_gost | default(false)
+
+    - name: Deployment complete
+      debug: msg="All services deployed successfully!"

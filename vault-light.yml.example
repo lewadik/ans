@@ -1,0 +1,4 @@
+# Light Vault Example - Copy to vault.yml and encrypt
+vault_traffmonetizer_token: "your_token_here"
+vault_gost_username: "your_username"
+vault_gost_password: "your_password"

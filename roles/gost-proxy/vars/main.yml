@@ -1,9 +1,0 @@
----
-# vars file for gost-proxy role
-
-# Alternative public IP services (fallback options)
-public_ip_services:
-  - "https://ipinfo.io/ip"
-  - "https://icanhazip.com"
-  - "https://ifconfig.me/ip"
-  - "https://api.ipify.org"
