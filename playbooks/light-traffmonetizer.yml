@@ -1,7 +1,0 @@
----
-# Ultra Light TrafficMonetizer Playbook
-- hosts: all
-  become: true
-  tasks:
-    - include_tasks: ../roles/docker.yml
-    - include_tasks: ../roles/traffmonetizer.yml

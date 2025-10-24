@@ -1,8 +1,0 @@
----
-- hosts: all
-  become: true
-  roles:
-    - docker
-    - role: traffmonetizer
-      vars:
-        traffmonetizer_token: "{{ vault_traffmonetizer_token }}"
